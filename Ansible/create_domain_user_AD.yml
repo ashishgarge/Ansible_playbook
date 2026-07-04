@@ -1,0 +1,15 @@
+- name: Manage Active Directory Domain User
+  hosts: domain_controllers
+  gather_facts: false
+  tasks:
+    - name: Ensure domain user is present and enabled
+      microsoft.ad.user:
+        name: ashish
+        firstname: ashish
+        surname: garge
+        upn: john.smith@company.local
+        password: SecurePassword123!
+        state: present
+        enabled: yes
+        email: ashish.garge@company.com
+      

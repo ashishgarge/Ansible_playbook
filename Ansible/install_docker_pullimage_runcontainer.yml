@@ -1,0 +1,19 @@
+- hosts: all
+  become: true
+  tasks:
+  - name: Install Docker
+    apt: name=docker.io state=latest
+
+  - name: Pull an image
+    community.docker.docker_image:
+	name: httpd:latest
+	source: pull
+    
+  - name: Create and start Dockr container
+    community.docker.docker_container:
+    	name: ashish
+    	image: httpd:latest
+	state: started
+    	ports: 
+	  - "80:80"
+

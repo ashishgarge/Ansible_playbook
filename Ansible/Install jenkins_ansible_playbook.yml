@@ -1,0 +1,49 @@
+---
+- name: Install Jenkins on Ubuntu
+  hosts: all
+  become: true
+  tasks:
+
+    - name: Update apt cache and install prerequisites
+      ansible.builtin.apt:
+        update_cache: yes
+        name:
+          - curl
+          - gnupg
+          - software-properties-common
+        state: present
+
+    - name: Install OpenJDK 21 (Required for Jenkins)
+      ansible.builtin.apt:
+        name: openjdk-21-jdk
+        state: present
+
+    - name: Create directory for Jenkins keyring
+      ansible.builtin.file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: '0755'
+
+    - name: Download Jenkins GPG signing key
+      ansible.builtin.get_url:
+        url: https://pkg.jenkins.io/debian-stable/jenkins.io-2026.key
+        dest: /etc/apt/keyrings/jenkins-keyring.asc
+        mode: '0644'
+
+    - name: Add Jenkins APT repository to sources list
+      ansible.builtin.apt_repository:
+        repo: "deb [signed-by=/etc/apt/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/"
+        state: present
+        filename: jenkins
+
+    - name: Update apt cache and install Jenkins
+      ansible.builtin.apt:
+        update_cache: yes
+        name: jenkins
+        state: present
+
+    - name: Ensure Jenkins service is started and enabled on boot
+      ansible.builtin.systemd:
+        name: jenkins
+        state: started
+        enabled: yes

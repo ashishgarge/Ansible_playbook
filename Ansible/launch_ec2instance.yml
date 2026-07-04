@@ -1,0 +1,20 @@
+#export the access key and secret key before running the playbook:
+---
+- name: Launch EC2 Instance
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+    - name: EC2instance
+      amazon.aws.ec2_instance:
+        name: public-compute-instance
+        key_name: keypair
+        vpc_subnet_id: subnet_242342
+        instance_type: t3.micro
+        security_group: default
+        network_interfaces:
+          - assign_public_ip: true
+        image_id: ami-08f44e8eca9095668
+        region: us-east-1
+        tags:
+          Environment: Testing
