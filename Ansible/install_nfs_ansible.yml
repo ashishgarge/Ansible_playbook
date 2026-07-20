@@ -1,0 +1,58 @@
+- name: Automate NFS Server Configuration
+  hosts: nfs_server
+  become: true
+  tasks:
+    - name: Install NFS server packages (Ubuntu)
+      apt:
+        name: nfs-kernel-server
+        state: present
+        update_cache: yes
+      when: ansible_os_family == "Debian"
+    - name: Install NFS server packages (RHEL)
+      dnf:
+        name:
+          - nfs-utils
+          - rpcbind
+        state: present
+      when: ansible_os_family == "RedHat"
+    - name: Create shared directory
+      file:
+        path: /mnt/nfs_share
+        state: directory
+        mode: "0777"
+    - name: Configure export paths
+      lineinfile:
+        path: /etc/exports
+        line: /mnt/nfs_share 192.168.1.50(rw,sync,no_subtree_check)
+        create: yes
+    - name: Start and enable NFS Server
+      systemd:
+        name: "{{ 'nfs-kernel-server' if ansible_os_family == 'Debian' else 'nfs-server'
+          }}"
+        state: restarted
+        enabled: yes
+- name: Automate NFS Client Configuration
+  hosts: nfs_clients
+  become: true
+  tasks:
+    - name: Install NFS client packages (Ubuntu)
+      apt:
+        name: nfs-common
+        state: present
+      when: ansible_os_family == "Debian"
+    - name: Install NFS client packages (RHEL)
+      dnf:
+        name: nfs-utils
+        state: present
+      when: ansible_os_family == "RedHat"
+    - name: Create mount directory
+      file:
+        path: /mnt/client_share
+        state: directory
+    - name: Mount NFS share and persist in fstab
+      mount:
+        path: /mnt/client_share
+        src: 192.168.1.10:/mnt/nfs_share
+        fstype: nfs
+        opts: defaults
+        state: mounted
