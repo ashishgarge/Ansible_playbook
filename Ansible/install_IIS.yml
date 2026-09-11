@@ -1,0 +1,7 @@
+- name: Install IIS
+  hosts: windows
+  tasks:
+    - name: Install IIS
+      ansible.windows.win_feature:
+        name: Web-Server
+        state: present

@@ -1,0 +1,63 @@
+- name: Install required Windows Server features
+  hosts: windows
+  gather_facts: yes
+
+  vars:
+    windows_features:
+      - NET-Framework-Core
+      - NET-Framework-45-Core
+      - MSMQ-Server
+      - Web-Server
+      - Web-Static-Content
+      - Web-Default-Doc
+      - Web-Dir-Browsing
+      - Web-Http-Errors
+      - Web-Http-Redirect
+      - Web-Asp-Net
+      - Web-Net-Ext
+      - Web-ASP
+      - Web-ISAPI-Ext
+      - Web-ISAPI-Filter
+      - Web-Http-Logging
+      - Web-Log-Libraries
+      - Web-Request-Monitor
+      - Web-Http-Tracing
+      - Web-Basic-Auth
+      - Web-Windows-Auth
+      - Web-Url-Auth
+      - Web-Filtering
+      - Web-IP-Security
+      - Web-Stat-Compression
+      - Web-Mgmt-Console
+      - Web-Scripting-Tools
+      - Web-Mgmt-Service
+      - WAS
+      - Web-Asp-Net45
+      - NET-Framework-45-ASPNET
+      - Windows-TIFF-IFilter
+      - FS-Resource-Manager
+      - NET-WCF-HTTP-Activation45
+      - RSAT-FSRM-Mgmt
+      - NET-HTTP-Activation
+      - NET-Non-HTTP-Activ
+      - Web-CGI
+
+  tasks:
+
+    - name: Install required Windows features
+      ansible.windows.win_feature:
+        name: "{{ windows_features }}"
+        state: present
+        include_management_tools: true
+      register: feature_install
+
+    - name: Reboot server if required
+      ansible.windows.win_reboot:
+        reboot_timeout: 1200
+        test_command: "exit 0"
+      when: feature_install.reboot_required
+
+    - name: Display installation result
+      ansible.builtin.debug:
+        var: feature_install
+
